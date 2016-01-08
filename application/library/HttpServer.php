@@ -134,24 +134,81 @@ class HttpServer
 
         $this->serverObj = new swoole_http_server($ip, $port);
         $this->serverObj->set($this->serverConfig);
+        $this->serverObj->on('Start', array($this, 'onStart'));
+        $this->serverObj->on('ManagerStart', array($this, 'onManagerStart'));
         $this->serverObj->on('WorkerStart', array($this, 'onWorkerStart'));
+        $this->serverObj->on('WorkerStop', array($this, 'onWorkerStop'));
         $this->serverObj->on('request', array($this, 'onRequest'));
         $this->serverObj->start();
     }
 
     /**
+     * Method  onStart
+     * @desc   master start
+     *
+     * @author WenJun <wenjun01@baidu.com>
+     * @param swoole_http_server $serverObj
+     *
+     * @return bool
+     */
+    public function onStart(swoole_http_server $serverObj)
+    {
+        //rename
+        swoole_set_process_name($this->serverConfig['master_process_name']);
+
+        return true;
+    }
+
+    /**
+     * Method  onManagerStart
+     * @desc   manager process start
+     *
+     * @author WenJun <wenjun01@baidu.com>
+     * @param swoole_http_server $serverObj
+     *
+     * @return bool
+     */
+    public function onManagerStart(swoole_http_server $serverObj)
+    {
+        //rename
+        swoole_set_process_name($this->serverConfig['manager_process_name']);
+
+        return true;
+    }
+
+    /**
      * Method  onWorkerStart
-     * @desc   worker进程启动时候
+     * @desc   worker process start
      * @author WenJun <wenjun01@baidu.com>
      * @param swoole_http_server $server
-     * @param                    $worker_id
-     * @return void
+     * @param                    $workerId
+     * @return bool
      */
-    public function onWorkerStart(swoole_http_server $server, $worker_id)
+    public function onWorkerStart(swoole_http_server $serverObj, $workerId)
     {
-        //TODO set name
+        //rename
+        $processName = sprintf($this->serverConfig['event_worker_process_name'], $workerId);
+        swoole_set_process_name($processName);
 
+        //实例化yaf
         $this->yafAppObj = new Yaf_Application($this->appConfigFile);
+
+        return true;
+    }
+
+    /**
+     * Method  onWorkerStop
+     * @desc   worker process stop
+     *
+     * @author WenJun <wenjun01@baidu.com>
+     * @param swoole_http_server $serverObj
+     * @param                    $workerId
+     *
+     * @return bool
+     */
+    public function onWorkerStop(swoole_http_server $serverObj, $workerId)
+    {
+        return true;
     }
 
     /**
