@@ -97,7 +97,7 @@ class HttpServer
             trigger_error('Server Config File Not Exist!', E_USER_ERROR);
         }
 
-        $serverConfig = parse_ini_file($serverConfigIni);
+        $serverConfig = parse_ini_file($serverConfigIni, true);
         if (empty($serverConfig)) {
             trigger_error('Server Config Content Empty!', E_USER_ERROR);
         }
@@ -129,11 +129,11 @@ class HttpServer
      */
     public function start()
     {
-        $ip   = isset($this->serverConfig['ip']) ? $this->serverConfig['ip'] : $this->defaultIp;
-        $port = isset($this->serverConfig['port']) ? $this->serverConfig['port'] : $this->defaultPort;
+        $ip   = isset($this->serverConfig['server']['ip']) ? $this->serverConfig['server']['ip'] : $this->defaultIp;
+        $port = isset($this->serverConfig['server']['port']) ? $this->serverConfig['server']['port'] : $this->defaultPort;
 
         $this->serverObj = new swoole_http_server($ip, $port);
-        $this->serverObj->set($this->serverConfig);
+        $this->serverObj->set($this->serverConfig['swoole']);
         $this->serverObj->on('Start', array($this, 'onStart'));
         $this->serverObj->on('ManagerStart', array($this, 'onManagerStart'));
         $this->serverObj->on('WorkerStart', array($this, 'onWorkerStart'));
@@ -154,7 +154,7 @@ class HttpServer
     public function onStart(swoole_http_server $serverObj)
     {
         //rename
-        swoole_set_process_name($this->serverConfig['master_process_name']);
+        swoole_set_process_name($this->serverConfig['server']['master_process_name']);
 
         return true;
     }
@@ -171,7 +171,7 @@ class HttpServer
     public function onManagerStart(swoole_http_server $serverObj)
     {
         //rename
-        swoole_set_process_name($this->serverConfig['manager_process_name']);
+        swoole_set_process_name($this->serverConfig['server']['manager_process_name']);
 
         return true;
     }
@@ -187,7 +187,7 @@ class HttpServer
     public function onWorkerStart(swoole_http_server $serverObj, $workerId)
     {
         //rename
-        $processName = sprintf($this->serverConfig['event_worker_process_name'], $workerId);
+        $processName = sprintf($this->serverConfig['server']['event_worker_process_name'], $workerId);
         swoole_set_process_name($processName);
 
         //实例化yaf
