@@ -234,6 +234,12 @@ class HttpServer
         ob_start();
         try {
             $requestObj = new Yaf_Request_Http($request->server['request_uri']);
+
+            $configArr  = Yaf_Application::app()->getConfig()->toArray();
+            if (!empty($configArr['application']['baseUri'])) { //set base_uri
+                $requestObj->setBaseUri($configArr['application']['baseUri']);
+            }
+
             $this->yafAppObj->bootstrap()->getDispatcher()->dispatch($requestObj);
         } catch (Yaf_Exception $e) {
             var_dump($e);

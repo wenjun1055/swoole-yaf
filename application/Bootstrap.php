@@ -34,10 +34,10 @@ class Bootstrap extends Yaf_Bootstrap_Abstract
      */
     public function _initLocalNamespace()
     {
-        $aNamespace = array(
+        $namespace = array(
             'Base',
         );
-        Yaf_Loader::getInstance()->registerLocalNamespace($aNamespace);
+        Yaf_Loader::getInstance()->registerLocalNamespace($namespace);
     }
 
     /**
